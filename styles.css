@@ -166,6 +166,59 @@ select {
     font-weight: bold;
 }
 
+
+.form-group {
+    margin-bottom: 10px;
+}
+#triviah1{
+    color: #fff;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#questionForm {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#saveBtn {
+    background-color: #2196F3;
+}
+
+#saveBtn:hover {
+    background-color: #0b7dda;
+}
+
+#cancelBtn {
+    background-color: #f44336;
+}
+
+#cancelBtn:hover {
+    background-color: #da190b;
+}
+
+#fetchBtn, #addBtn {
+    margin-bottom: 20px;
+}
+
+
+
+
+
 @media (max-width: 600px) {
     .quiz-header {
         flex-direction: column;

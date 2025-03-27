@@ -45,10 +45,43 @@
     </div>
 
 
-    <div class="screen">
-        View All Questions
+    
+<!-- manage questions -->
+ 
+    <h1 id="triviah1">Trivia Questions CRUD</h1>
+    
+    <div id="controls">
+        <button id="fetchBtn">Fetch Questions</button>
+        <button id="addBtn">Add New Question</button>
     </div>
-
+    
+    <div id="questionForm" style="display: none;">
+        <h2>Add/Edit Question</h2>
+        <div class="form-group">
+            <label for="question">Question:</label>
+            <textarea id="question" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="correctAnswer">Correct Answer:</label>
+            <input type="text" id="correctAnswer">
+        </div>
+        <div class="form-group">
+            <label for="incorrectAnswers">Incorrect Answers (comma separated):</label>
+            <input type="text" id="incorrectAnswers">
+        </div>
+        <div class="form-group">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        <button id="saveBtn">Save</button>
+        <button id="cancelBtn">Cancel</button>
+    </div>
+    
+    <div id="questionsContainer"></div>
     <script src="index.js"></script>
 </body>
 </html>

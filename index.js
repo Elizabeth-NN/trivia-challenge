@@ -219,3 +219,194 @@ document.addEventListener('DOMContentLoaded', () => {
         return txt.value;
     }
 });
+
+// 
+
+
+
+let questions = [];
+let currentQuestionId = null;
+
+// DOM elements
+const fetchBtn = document.getElementById('fetchBtn');
+const addBtn = document.getElementById('addBtn');
+const questionForm = document.getElementById('questionForm');
+const saveBtn = document.getElementById('saveBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const questionsContainer = document.getElementById('questionsContainer');
+
+// Form fields
+const questionField = document.getElementById('question');
+const correctAnswerField = document.getElementById('correctAnswer');
+const incorrectAnswersField = document.getElementById('incorrectAnswers');
+const difficultyField = document.getElementById('difficulty');
+
+// Initialize the app
+function init() {
+    // Load any saved questions from localStorage
+    const savedQuestions = localStorage.getItem('triviaQuestions');
+    if (savedQuestions) {
+        questions = JSON.parse(savedQuestions);
+        renderQuestions();
+    }
+
+    // Add event listeners
+    fetchBtn.addEventListener('click', fetchQuestions);
+    addBtn.addEventListener('click', showAddForm);
+    saveBtn.addEventListener('click', saveQuestion);
+    cancelBtn.addEventListener('click', hideForm);
+}
+
+// Fetch questions from API
+async function fetchQuestions() {
+    try {
+        const response = await fetch('https://opentdb.com/api.php?amount=10&category=17&difficulty=easy');
+        const data = await response.json();
+        
+        // Transform API data to our format
+        const newQuestions = data.results.map((q, index) => ({
+            id: Date.now() + index, // Simple unique ID
+            question: decodeHtmlEntities(q.question),
+            correctAnswer: decodeHtmlEntities(q.correct_answer),
+            incorrectAnswers: q.incorrect_answers.map(a => decodeHtmlEntities(a)),
+            difficulty: q.difficulty,
+            category: q.category
+        }));
+        
+        questions = [...questions, ...newQuestions];
+        saveToLocalStorage();
+        renderQuestions();
+    } catch (error) {
+        console.error('Error fetching questions:', error);
+        alert('Failed to fetch questions. Please try again.');
+    }
+}
+
+// Helper function to decode HTML entities
+function decodeHtmlEntities(text) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+}
+
+// Render all questions
+function renderQuestions() {
+    questionsContainer.innerHTML = '';
+    
+    if (questions.length === 0) {
+        questionsContainer.innerHTML = '<p>No questions available. Fetch or add some!</p>';
+        return;
+    }
+    
+    questions.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `
+            <h3>${q.question}</h3>
+            <p><strong>Category:</strong> ${q.category || 'Science & Nature'}</p>
+            <p><strong>Correct Answer:</strong> ${q.correctAnswer}</p>
+            <p><strong>Incorrect Answers:</strong> ${q.incorrectAnswers.join(', ')}</p>
+            <p><strong>Difficulty:</strong> ${q.difficulty}</p>
+            <button data-id="${q.id}" class="edit-btn">Edit</button>
+            <button data-id="${q.id}" class="delete-btn">Delete</button>
+        `;
+        questionsContainer.appendChild(card);
+    });
+
+    // Add event listeners to dynamically created buttons
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => editQuestion(parseInt(e.target.dataset.id)));
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => deleteQuestion(parseInt(e.target.dataset.id)));
+    });
+}
+
+// Show form for adding a new question
+function showAddForm() {
+    currentQuestionId = null;
+    resetForm();
+    questionForm.style.display = 'block';
+}
+
+// Show form for editing an existing question
+function editQuestion(id) {
+    const question = questions.find(q => q.id === id);
+    if (!question) return;
+    
+    currentQuestionId = id;
+    questionField.value = question.question;
+    correctAnswerField.value = question.correctAnswer;
+    incorrectAnswersField.value = question.incorrectAnswers.join(', ');
+    difficultyField.value = question.difficulty;
+    
+    questionForm.style.display = 'block';
+}
+
+// Save question (create or update)
+function saveQuestion() {
+    const questionText = questionField.value.trim();
+    const correctAnswer = correctAnswerField.value.trim();
+    const incorrectAnswers = incorrectAnswersField.value.split(',').map(a => a.trim()).filter(a => a);
+    const difficulty = difficultyField.value;
+    
+    if (!questionText || !correctAnswer || incorrectAnswers.length === 0 || !difficulty) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    const questionData = {
+        id: currentQuestionId || Date.now(),
+        question: questionText,
+        correctAnswer,
+        incorrectAnswers,
+        difficulty,
+        category: "Science & Nature"
+    };
+    
+    if (currentQuestionId) {
+        // Update existing question
+        const index = questions.findIndex(q => q.id === currentQuestionId);
+        if (index !== -1) {
+            questions[index] = questionData;
+        }
+    } else {
+        // Add new question
+        questions.push(questionData);
+    }
+    
+    saveToLocalStorage();
+    hideForm();
+    renderQuestions();
+}
+
+// Delete a question
+function deleteQuestion(id) {
+    if (confirm('Are you sure you want to delete this question?')) {
+        questions = questions.filter(q => q.id !== id);
+        saveToLocalStorage();
+        renderQuestions();
+    }
+}
+
+// Save questions to localStorage
+function saveToLocalStorage() {
+    localStorage.setItem('triviaQuestions', JSON.stringify(questions));
+}
+
+// Helper functions
+function hideForm() {
+    questionForm.style.display = 'none';
+    resetForm();
+}
+
+function resetForm() {
+    questionField.value = '';
+    correctAnswerField.value = '';
+    incorrectAnswersField.value = '';
+    difficultyField.value = 'easy';
+}
+
+// Initialize the application when the DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
